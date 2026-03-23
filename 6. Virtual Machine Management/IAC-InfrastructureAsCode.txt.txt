@@ -1,0 +1,366 @@
+https://developer.hashicorp.com/vagrant/docs
+
+
+++++++++++++++++++++++++++
+
+To remove a VM
+++++++++++++++++++++++++++
+
+vagrant global-status
+vagrant global-status --prune
+vagrant status 
+vagrant destroy
+
+++++++++++++++++++++++++++
+
+Managing Vagrant File from VSC
+++++++++++++++++++++++++++++++++
+install Vagrantfile Support
+open vagrant file 
+Uncomment config.vm.network 
+config.vm.provider ==> add memory, cpus
+
+select a line command+I githup copilot windows shows up , type /explain to know what that line/block doing
+we use virtualboc provider for windows, vmvare provider for mac
+
+on vsc terminal go to vagrant file folder run 
+vagrant up
+vagrant ssh
+sudo -i
+ip addr show ==> to check ip address
+free -m ==> check free memory
+cat /proc/cpuinfo  ==> cpu info
+vagrnat halt ==> to stop
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+vagrant sync files
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+VAGRANT-VMs/myvms/Vagrantfile
+
+cd Vagrantfile
+vagrant up
+You will see vm comes up u will see host m/c path and guest m/c path (host => guest)
+F:/vagrnat-vms/myvms => /vagrant 
+
+
+to map any folder from host m/c to guest m/c
+in vagrant file
+config.vm.synced_folder "../data","/vagrant_data"
+-----------------------
+To boot vagrant vm
+-----------------------
+vagrant reload
+vagrant ssh
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+provisioning
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+first time OS boots / comes up first time (VM created or provisioned) - running/executing commands , also called bootstraping
+
+config.vm.provision "shell", inline:<<-SHELL
+SHELL
+
+vagrant provision
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+server management - centos
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setup a httpd on centos vm and deploy some html templates
+
+vagrant box list
+vagrant init <box name>
+vim Vagrnatfile
+update config.vm.network, config.vm.provider with cpu, and memory
+vagrant up
+sudo -i
+vi /etc/hostname ==> update fianance 
+run cmd , hostname finance
+exit
+vagrant ssh
+yum install httpd wget vim unzip zip -y ==> installing all dependencies
+systemctl start httpd
+systemctl enable httpd
+ip addr show
+when put the ip adress on browser and run you see deafult https server page 
+
+content to be added /var/www/html => index.html 
+after updating index.html 
+systemctl restart httpd
+systemctl status httpd
+systemctl status firewalld 
+systemctl stop firewalld 
+systemctl disable firewalld 
+vagrant halt
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+server management - ubuntu
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setup a lamp stack on ubuntu vm and setup wordpress html
+
+
+vagrant init <unbunty-box>
+vim Vagrnatfile
+update config.vm.network, config.vm.provider with cpu, and memory
+vagrant up
+sudo -i
+vi /etc/hostname ==> update fianance 
+run cmd , hostname finance
+exit
+vagrant ssh
+follow step by step from https://ubuntu.com/tutorials/install-and-configure-wordpress#1-overview
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+server management - automated process - IAC - for centos - httpd service
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+config.vm.provision "shell", inline:<<-SHELL
+  yum install httpd wget vim unzip zip -y
+  systemctl start httpd
+  systemctl enabled httpd
+  mkdir -p /tmp/finance
+  cd /tmp/finance
+  wget <html templates download zip>
+  unzip -o <name of zipfile> 
+  cp -r <unzipped folder>/* /var/www/html/
+  systemctl restart httpd
+  cd /tmp/
+  rm -rf /tmp/finance
+SHELL
+
+vagrant up
+vagrant ssh
+ip addr show
+vagrant destroy / vagrant halt
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+server management - automated process - IAC - for ubuntu - appache2 service
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+config.vm.provision "shell", inline:<<-SHELL
+  sudo apt update
+  sudo apt install apache2 \
+                 ghostscript \
+                 libapache2-mod-php \
+                 mysql-server \
+                 php \
+                 php-bcmath \
+                 php-curl \
+                 php-imagick \
+                 php-intl \
+                 php-json \
+                 php-mbstring \
+                 php-mysql \
+                 php-xml \
+                 php-zip
+  sudo mkdir -p /srv/www
+  sudo chown www-data: /srv/www
+  curl https://wordpress.org/latest.tar.gz | sudo -u www-data tar zx -C /srv/www
+  cat > /etc/apache2/sites-available/wordpress.conf <<EOF
+    <VirtualHost *:80>
+        DocumentRoot /srv/www/wordpress
+        <Directory /srv/www/wordpress>
+            Options FollowSymLinks
+            AllowOverride Limit Options FileInfo
+            DirectoryIndex index.php
+            Require all granted
+        </Directory>
+        <Directory /srv/www/wordpress/wp-content>
+            Options FollowSymLinks
+            Require all granted
+        </Directory>
+    </VirtualHost>
+  EOF
+  sudo a2ensite wordpress
+  sudo a2enmod rewrite
+  sudo a2dissite 000-default
+  sudo mysql -u root -e 'CREATE DATABASE wordpress;'
+  sudo mysql -u root -e 'CREATE USER wordpress@localhost IDENTIFIED BY "<your-password>";'
+  sudo mysql -u root -e 'GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER ON wordpress.* TO wordpress@localhost;'
+  sudo mysql -u root -e 'FLUSH PRIVILEGES;'
+  sudo -u www-data cp /srv/www/wordpress/wp-config-sample.php /srv/www/wordpress/wp-config.php
+  sudo -u www-data sed -i 's/database_name_here/wordpress/' /srv/www/wordpress/wp-config.php
+  sudo -u www-data sed -i 's/username_here/wordpress/' /srv/www/wordpress/wp-config.php
+  sudo -u www-data sed -i 's/password_here/<your-password>/' /srv/www/wordpress/wp-config.php
+  systemctl restart mysql
+  systemctl restart apache2
+SHELL
+
+vagrant up
+vagrant ssh
+ip addr show
+vagrant destroy / vagrant halt
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+server management - automated process - IAC - with copilot
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+In VSC copilot chat 
+/new => @workspace/new create a folder structure with Vagrantfile and provisioing script, VM settings, box name ubuntu/jammy64, private_network 192.168.56.78, public network, mention the path of the script in provisioning. Provisioning script should set up website from tooplate.com
+/new => @workspace/new create a folder structure with Vagrantfile and provisioing script, VM settings, box name ubuntu/jammy64, private_network 192.168.56.79, public network, Memory 2gb,2 cpus. mention the path of the script in provisioning. Provisioning script should set up wordpress.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+multiVM vagrant file
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+https://developer.hashicorp.com/vagrant/docs
+
+Chat gpt prompt - 
+multivm vagrant file with web01 ubuntu20, web02 with ubuntu 20 & db01 with centos7. Private IP for all teh vms. Provisioning for db01. set hostname also
+
+file generated
+Vagrant.configure("2") do |config|
+
+  # --------------------
+  # web01 - Ubuntu 20.04
+  # --------------------
+  config.vm.define "web01" do |web01|
+    web01.vm.box = "ubuntu/focal64"
+    web01.vm.hostname = "web01"
+    web01.vm.network "private_network", ip: "192.168.56.41"
+
+    web01.vm.provider "virtualbox" do |vb|
+      vb.name = "web01"
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+  end
+
+  # --------------------
+  # web02 - Ubuntu 20.04
+  # --------------------
+  config.vm.define "web02" do |web02|
+    web02.vm.box = "ubuntu/focal64"
+    web02.vm.hostname = "web02"
+    web02.vm.network "private_network", ip: "192.168.56.42"
+
+    web02.vm.provider "virtualbox" do |vb|
+      vb.name = "web02"
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+  end
+
+  # --------------------
+  # db01 - CentOS 7
+  # --------------------
+  config.vm.define "db01" do |db01|
+    db01.vm.box = "centos/7"
+    db01.vm.hostname = "db01"
+    db01.vm.network "private_network", ip: "192.168.56.43"
+
+    # Provisioning for DB server
+    db01.vm.provision "shell", inline: <<-SHELL
+      yum install -y wget unzip epel-release -y
+      yum install -y mariadb-server mariadb -y
+      systemctl start mariadb
+      systemctl enable mariadb
+      echo "MariaDB installed and started on db01"
+    SHELL
+
+    db01.vm.provider "virtualbox" do |vb|
+      vb.name = "db01"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+  end
+end
+
+
+vagrant up
+vagrant ssh web01
+vagrant ssh web02
+vagrant ssh db01
+
+vagrant halt web01
+vagrant halt web02
+vagrant halt db01
+(or)
+vagrant halt
+
+vagrant destroy web01
+vagrant destroy web02
+vagrant destroy db01
+(or)
+vagrant destroy
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Systemctl for apache tomcat
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+There are some services systemctl is not by default, we need to build them. 
+Tomcat is service from apche. 
+Apache https and Apache tomcat are 2 diff services. Apache tomcat java servlet container it host java based web applications.
+
+centos vm
+cat /etc/os-release
+install https ==> dnf install https -y
+systemctl status httpd
+
+check config file ==> cat /usr/lib/systemd/system/httpd.service
+download tomcat 10 ==> wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.52/bin/apache-tomcat-10.1.52.tar.gz
+tar xzvf apache-tomcat-10.1.52.tar.gz
+install java ==> dnf install java-17-openjdk -y
+cd apache-tomcat-10.1.52
+run ==> bin/startup.sh ==> tomcat gets started
+ip addr show
+kill <processid>
+to run tomcat as non root user, and need a home directory for tomcat
+useradd --home-dir /opt/tomcat --shell /sbin/nologin tomcat
+cp - r apache-tomcat-10.1.52/* /opt/tomcat/
+chown -R tomcat.tomcat /opt/tomcat/
+
+vim /etc/systemd/system/tomcat.service
+:i
+
+[unit]
+Description=Tomcat
+Afer=network.target
+
+[service]
+Type=forking
+User=tomcat
+Group=tomcat
+
+WorkingDirectory=/opt/tomcat
+
+Environment=JAVA_HOME=/usr/lib/jvm/jre
+
+Environment=CATALINA_HOME=/opt/tomcat
+Environment=JAVA_BASE=/opt/tomcat
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+
+[install]
+WantedBy=multi-user.target
+
+
+:wq
+
+systemctl daemon-reload
+ps -ef | grep tomcat (make sure no tomcat services already running)
+
+start tomcat
+status tomcat
+systemctl enable tomcat
+
+
+
+
+
+
+
