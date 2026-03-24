@@ -1,0 +1,41 @@
+python DataStructures
+
+string, integrer, list(array[]), Tuples(in ()), dictionary({key:value})
+
+spacing is imp in yaml
+
+
+----------------------------------
+Json looks like : 
+----------------------------------
+{
+  "Skill": "Devops",
+  "Year": 2023,
+  "Tech": {
+    "cloud": "AWS",
+    "Container": "K8s",
+    "CICD": "Jnekins",
+    "GitOps": [
+      "GitLab",
+      "ArgoCD",
+      "Tekton"
+    ]
+  }
+}
+
+
+
+----------------------------------
+Yaml Looks like:
+----------------------------------
+devops:
+  Skill: Devops
+  Year: 2023
+  Tech:
+    cloud: AWS
+    Container: K8s
+    CICD: Jnekins
+    GitOps:
+      - GitLab
+      - ArgoCD
+      - Tekton
