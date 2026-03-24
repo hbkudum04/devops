@@ -1,0 +1,80 @@
+-----------------------
+N/w'g components
+-----------------------
+computer network --> communication b/w 2 or more n/w interfaces
+OSI Model --> Open system communication developed by ISO international Organization for standardization
+
+
+ISO-OSI model is 7 layer arch dev in 198
+-----------------------
+ISO-OSI model
+-----------------------
+7 application - browser allow access to n/w resources
+6 presentation -- to translate, encrypst and compress data
+5 session -- establish manage & terminate session
+4 transport --reliable process-to-process message delivary/error recovery
+3 Network -- packets src to destn
+2 datalink - organize bits into frames
+1 physical - cables, to transmit bits over a medium
+
+basic elements of a layered modal are
+services - set of actions taht a layer can offer to other
+protocols - set of rules a layer uses to exchange info
+Interfaces - communication b/w layers
+
+ipv4 -- 32 bit binary number
+
+192.168.100.1 -- 4 octets Max range (255.255.255.255)
+
+
+Public IP (internet devices) -
+Private IP (Local n/w design) - Class A(range 10.0.0.0 - 10.255.255.255), Class B(range 172.16.0.0 - 172.31.255.255), Class C(range 192.168.0.0 - 192.168.255.255)
+
+-----------------------
+Protocols
+-----------------------
+Layer 4 protocols - TCP(Reliable - FTP,HTTP, HTTPS) ,UDP(UnReliable, speed - DNS, DHCP,TFTP,ARP,RARP )
+ports (imp for firewalls setup)
+DNS (UDP port) 53
+(TCP ports)DNS TCP:53, http:80, https:443,SMTP:25, POP:109,110,  TELNET:23, FTP:20,21, SSH:22, AFP IP:447,548
+
+OSI MODEL                                    TCP/IP model
+==============================================================================
+Application Layer    |                       Application
+---------------------                        telnet   FTP  DHCP  TFTP
+Presentation layer   |                        HTTP  SMPTP  DNS  SNMP
+---------------------
+Session Layer        |
+==============================================================================
+Transport Layer      |                      Transport  TCP     UDP
+==============================================================================
+Network Layer        |                      Internet   ICMP  ARP  RARP  IP
+==============================================================================
+DataLink Layer       |
+---------------------                        N/W interfaces
+Physical Layer       |
+==============================================================================
+
+
+
+-----------------------
+Network Commands
+-----------------------
+ifconfig (or) ip addr show ==> active n/w interfaces
+ping <ip addr> ==> shows connectivity , packet loss
+tracert www.google.in ==> traces route to  www.google.in 
+netstat -antp ==> active internet connections (servers & established)
+ps -ef | grep apache2
+netstat -antp | grep 3336
+ss -tunlp to see open ports on ur system
+apt install nmap -y ( only for trouble shoot, dont use on public n/ws)
+nmap localhost ++> to scan ports if they are open or not
+dig www.google.com
+nslookup www.google.com
+route -n ( to see gateways)
+arp  (for getting kernal mapping)
+mtr ==> trace route 
+
+
+
+
