@@ -1,0 +1,285 @@
+--------------------------------------------------------------------------------
+Proj(Vprofile) Setup Lcoal
+--------------------------------------------------------------------------------
+Infrastructure As A Code 
+
+Automated & Repeatable 
+
+--------------------------------------------------------------------------------
+Tools: 
+--------------------------------------------------------------------------------
+Hypervisor - Oracle VM VirtualBox
+Automation - Vagrant
+CLI - git bash/terminal
+IDE - VSC
+
+--------------------------------------------------------------------------------
+Objective: 
+--------------------------------------------------------------------------------
+VM automation Locally
+Baseline upcoming proj
+Real worl proj setup locally (FOr R&D)
+
+--------------------------------------------------------------------------------
+Project architecture: 
+--------------------------------------------------------------------------------
+stack - colelction of services working to gether to create an exp, eg: web app
+
+Browser Provide Url ----> reg goes to NGINX (load balancer) ------>req is being routed to Apache tomcat server (Java web application service)<-------> NFS(Centralized strorage)
+Tomcat service  <---> memcash<---->Mysql
+Tomcat service  <--->rabbitMQ
+
+--------------------------------------------------------------------------------
+Automation stack architecture: 
+--------------------------------------------------------------------------------
+Vagrant + Oracle VitualBox + Bash =>>> all services
+
+Proj: https://github.com/hkhcoder/vprofile-project
+
+install the plugin ==> $ vagrant plugin install vagrant-hostmanager
+add these line in vagrant file ==>
+
+config.hostmanager.enabled = true 
+config.hostmanager.manage_host = true
+
+This will host name to ip mapping in /etc/hosts
+
+Setup should be done in below mentioned order
+MySQL (Database SVC)
+Memcache (DB Caching SVC)
+RabbitMQ (Broker/Queue SVC)
+Tomcat (Application SVC
+
+Clone the code
+Goto vagrant file location on terminal
+vagrant up
+cat /etc/hosts
+192.168.56.12 app01
+192.168.56.15 db01
+192.168.56.14 mc01
+192.168.56.13 rmq01
+192.168.56.11 web01
+
+vagrant ssh app01
+vagrant ssh db01
+vagrant ssh mc01
+vagrant ssh rmq01
+vagrant ssh web01
+
++++ mysql Setup +++
+++++++++++++++++++++
+vagrant ssh db01
+dnf update -y ==> update OS with latest patches 
+dnf install epel-release -y ==> set repository
+dnf install git mariadb-server -y ==> installs maria DB package
+
+starting and enabling mariadb-server ==>
+systemctl start mariadb
+systemctl enable mariadb
+systemctl status mariadb
+
+
+RUn mysql secure installtion script  ==> mysql_secure_intsallation
+set DB name and user
+download source code intialize DB
+
+
++++ mem cache service +++
+++++++++++++++++++++++++++
+vagrant ssh mc01
+dnf update -y ==> update OS with latest patches 
+dnf install epel-release -y ==> set repository
+
+Install, start & enable memcache  ==>
+sudo dnf install memcached -y
+sudo systemctl start memcached
+sudo systemctl enable memcached
+sudo systemctl status memcached
+
+sed -i 's/127.0.0.1/0.0.0.0/g' /etc/sysconfig/memcached ==> to connect service by remote services
+sudo systemctl restart memcached
+sudo memcached -p 11211 -U 11111 -u memcached -d
+
+
++++ Rabbit MQ +++
++++++++++++++++++++
+vagrant ssh rmq01
+dnf update -y ==> update OS with latest patches 
+dnf install epel-release -y ==> set repository
+
+Install dependencies 
+sudo dnf install wget -y
+dnf -y install centos-release-rabbitmq-38
+dnf --enablerepo=centos-rabbitmq-38 -y install rabbitmq-server
+systemctl enable --now rabbitmq-server
+sudo sh -c 'echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config' ==> config changes for remote connection
+sudo systemctl restart rabbitmq-server
+
+Setup access to user test and make it admin ==>
+sudo rabbitmqctl add_user test test  ==> cretaed test user
+sudo rabbitmqctl set_user_tags test administrator ==> gave admin access to this test user
+rabbitmqctl set_permissions -p / test ".*" ".*" ".*" ==> set permission
+sudo systemctl restart rabbitmq-server
+sudo systemctl status rabbitmq-server
+
++++ TOMCAT +++
++++++++++++++++++
+
+vagrant ssh app01
+dnf update -y ==> update OS with latest patches 
+dnf install epel-release -y ==> set repository
+
+Install Dependencies
+dnf -y install java-17-openjdk java-17-openjdk-devel
+dnf install git wget -y
+
+Change dir to /tmp
+cd /tmp/
+
+Download & Tomcat Package
+wget https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.26/bin/apache-tomcat-10.1.26.tar.gz
+tar xzvf apache-tomcat-10.1.26.tar.gz
+
+Add tomcat user
+useradd --home-dir /usr/local/tomcat --shell /sbin/nologin tomcat
+
+Copy data to tomcat home dir
+cp -r /tmp/apache-tomcat-10.1.26/* /usr/local/tomcat/
+
+Make tomcat user owner of tomcat home dir
+chown -R tomcat.tomcat /usr/local/tomcat
+
+Setup systemctl command for tomcat
+Create tomcat service file
+vi /etc/systemd/system/tomcat.service
+
+Update the file with below content
+[Unit]
+Description=Tomcat
+After=network.target
+[Service]
+User=tomcat
+Group=tomcat
+WorkingDirectory=/usr/local/tomcat
+Environment=JAVA_HOME=/usr/lib/jvm/jre
+Environment=CATALINA_PID=/var/tomcat/%i/run/tomcat.pid
+Environment=CATALINA_HOME=/usr/local/tomcat
+Environment=CATALINA_BASE=/usr/local/tomcat
+ExecStart=/usr/local/tomcat/bin/catalina.sh run
+ExecStop=/usr/local/tomcat/bin/shutdown.sh
+RestartSec=10
+Restart=always
+[Install]
+WantedBy=multi-user.target
+
+Reload systemd files
+systemctl daemon-reload
+
+Start & Enable service
+systemctl start tomcat
+systemctl enable tomcat
+systemctl status tomcat
+
++++ Code Build & Deploy +++
++++++++++++++++++++++++++++
+cd /tmp/
+wget https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip
+unzip apache-maven-3.9.9-bin.zip
+cp -r apache-maven-3.9.9 /usr/local/maven3.9
+export MAVEN_OPTS="-Xmx512m"
+
+Download Source code
+git clone -b local https://github.com/hkhcoder/vprofile-project.git
+
+Update configuration
+cd vprofile-project
+vim src/main/resources/application.properties
+Update file with backend server details
+
+Build code
+Run below command inside the repository (vprofile-project)
+/usr/local/maven3.9/bin/mvn install
+
+Deploy artifact
+
+systemctl stop tomcat
+rm -rf /usr/local/tomcat/webapps/ROOT*
+cp target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
+systemctl start tomcat
+chown tomcat.tomcat /usr/local/tomcat/webapps -R
+systemctl restart tomcat
+systemctl status tomcat
+
++++ NGINX +++
+++++++++++++++
+
+Login to the Nginx vm
+$ vagrant ssh web01
+$ sudo -i
+
+Verify Hosts entry, if entries missing update the it with IP and hostnames
+cat /etc/hosts
+
+Update OS with latest patches
+apt update ==> just checks 
+apt upgrade ==> this upgrades
+
+Install nginx
+apt install nginx -y
+
+Create Nginx conf file
+vi /etc/nginx/sites-available/vproapp
+
+Update with below content
+
+upstream vproapp {
+server app01:8080;
+}
+server {
+ listen 80;
+location / {
+ proxy_pass http://vproapp;
+}
+}
+
+
+Remove default nginx conf
+rm -rf /etc/nginx/sites-enabled/default
+
+Create link to activate website
+ln -s /etc/nginx/sites-available/vproapp /etc/nginx/sites-enabled/vproapp
+
+Restart Nginx
+systemctl restart nginx
+systemctl status nginx
+
+
++++ Validate +++
+++++++++++++++++
+http://192.168.56.11:80  or http://web01:80 ==> ngx and tomcat verified
+logged in so db connection established ==> MySQL  and applcuation validation
+click on rabbit MQ ==> rabbitmq connection intiated and verified
+click on all users ==> db validation & mem cache validated
+
+Vagrant destroy --force
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++ Automate Infrastructure As A Code +++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The vagrant file is same as manual except that extra line   ==>   db01.vm.provision "shell", path: <"mysql.sh">
+
+in the directory vagrant file and all bash scripts 
+
+vagrant up
+
+validate 
+Vagrant halt 
+
+
+
+
+
+
+
+
