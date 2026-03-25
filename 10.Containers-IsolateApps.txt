@@ -1,0 +1,104 @@
+file system hierarchy for OS
+
+root ==> The base of the entire file system hierarchy.
+_______________________________
+root
+boot
+bin
+var ==> Stores variable data such as log files that change frequently during system operation
+etc ==> Stores system-wide configuration files used to control system behavior
+media
+home
+sbin
+usr
+dev
+opt
+
+Services/Processes of teh OS uses these directories
+
+COntainers ==> miniature OS
+each service has its own container and respective file system all connected by virtualized n/w 
+
+containerization ==> we can archive/image each of these conatianers can be deployed to prod / any real env
+
+famous container runtime env is docker
+
+Docker Overview: https://docs.docker.com/get-started/docker-overview/
+Registry : hub.docker.com
+
+Host(physical/virtual) ==> Docker deamon ==> containers  <== images <== Registry
+
+docker build ==> build our own images
+docker pull / docker run <== pulls the required images from your configured registry
+docker push ==> Docker pushes your image to your configured registry.
+
+docker images ==> displays available images 
+docker ps ==> running container
+docker ps -a ==> all containers
+docker inspect <container name/id>
+
+==============================================================================================================================
+our Vprofile project on containers
+==============================================================================================================================
+vagrant file has only only one ubuntu20 VM 
+and provision scripts for dcoker conatainers download
+
+
+vagrant global-status --prune ==> make sure all other vms are down 
+vagrant up 
+sudo -i
+
+docker compose ==> this will read docker-compose.yaml file to bring multiple containers up 
+docker compose up -d => reads docker-compose.yaml and pull up images and brings up all conatainers
+docker compose ps
+dockers images ==> shows images from which containers are created
+docker compose down ==> stops containers and removes containers
+docker system prune -a ==> removes all stopped containers and images (if tehy are not used)
+
+
+==============================================================================================================================
+Mono Lithic and micro service 
+==============================================================================================================================
+
+entires application and services on one server ==> mono Lithic -> one artifact on oen linux sever running tomcat
+Userinterface -- java
+chat -- nodeJS
+notification --python
+
+each profile is a micro service ==> Architectural and organizational approach to s/w dev where s/w si composed of small independent services that communicate over well defined APIs. These services are owned by small, self-contained teams
+all three interacted with api gate way
+for micro services diff servers for diff services ==> we cna containerize and isolate and run in container run time env like docker
+
+https://aws.amazon.com/microservices/
+
+
+
+==============================================================================================================================
+deployment of a microservice application
+==============================================================================================================================
+EMart --> designed using m/s arch
+front end apigateway created by nginx ( balancer )
+url redirected 
+root / directed to  Client devloped using angular
+root intern connects /api i.e EMart api developed using Node JS <==> Mongo DB
+/web API directed to Booksmart api developed using java <==> mysql
+
+vagrant file has only only one ubuntu20 VM 
+
+vagrant global-status --prune ==> checl all other vms powered off
+vagrant up
+sudo -i
+repo ==> https://github.com/devopshydclub/emartapp
+git clone https://github.com/devopshydclub/emartapp
+cd emartapp/
+
+docker compose up -d  ==> it builds images and build containers from images 
+docker ps -a
+
+docker compose down ==> stops containers and removes containers
+docker system prune -a ==> removes all stopped containers and images (if tehy are not used)
+vagrant halt
+
+
+
+
