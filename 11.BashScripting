@@ -1,0 +1,211 @@
+Vagrant File
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "scriptbox" do |scriptbox|
+    scriptbox.vm.box = "eurolinux-vagrant/centos-stream-9"
+	scriptbox.vm.network "private_network", ip: "192.168.10.12"
+        scriptbox.vm.hostname = "scriptbox"
+	scriptbox.vm.provider "virtualbox" do |vb|
+     vb.memory = "1024"
+   end
+  end
+
+  config.vm.define "web01" do |web01|
+    web01.vm.box = "eurolinux-vagrant/centos-stream-9"
+	web01.vm.network "private_network", ip: "192.168.10.13"
+        web01.vm.hostname = "web01"
+  end
+  
+  config.vm.define "web02" do |web02|
+    web02.vm.box = "eurolinux-vagrant/centos-stream-9"
+	web02.vm.network "private_network", ip: "192.168.10.14"
+        web02.vm.hostname = "web02"
+  end
+
+   config.vm.define "web03" do |web03|
+    web03.vm.box = "ubuntu/bionic64"
+        web03.vm.network "private_network", ip: "192.168.10.15"
+        web03.vm.hostname = "web03"
+  end
+end
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+vagrant up scriptbox
+vagrant ssh scriptbox
+sudo -i
+vi /etc/hostname
+hostname scriptbox
+mkdir /opt/scripts
+cd /opt/scripts/
+yum install vim -y ==> installing vim
+vim firstscript.sh
+#!/bin/bash
+echo "My first script"
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "Uptime of system is:"
+echo
+Uptime
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo
+echo "Memory Utilization:"
+echo
+free -m
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo
+echo "disk Utilization:"
+echo
+df -h
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo
+(base) hkudum@MD97HNVGC64 bashcommands % 
+
+:wq
+./firstscript.sh ==> permission denied 
+chmod +x firstscript.sh
+./firstscript.sh
+
+
+vim websetup.sh
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "installing dependencies "
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+sudo yum install wget unzip httpd -y > /dev/null
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "starting and enabling httpd "
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+sudo systemctl start httpd
+sudo systemctl enable httpd
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "copying web files"
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+mkdir -p /tmp/webfiles
+cd /tmp/webfiles
+
+wget https://www.tooplate.com/zip-templates/2098_health.zip > /dev/null
+unzip 2098_health.zip/* /var/www/html/ > /dev/null
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "restarting httpd "
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+systemctl restrt httpd
+echo
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "removing temp files "
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+
+rm -rf /tmp/webfiles
+
+sudo systemctl status httpd
+la /var/www/html
+:wq
+
+tried same thing on chatGPT
+Generate bash script  to install httpd and unzip services, download html template from too-late.com and restart httpd
+Improve readability and error handling
+
+COde generated
+#!/bin/bash
+#
+# Installs httpd and unzip
+# Downloads an HTML template
+# Deploys it to Apache web root
+# Restarts httpd
+#
+
+set -Eeuo pipefail
+
+############################
+# Configuration
+############################
+TEMPLATE_URL="https://too-late.com/template.zip"
+WEB_ROOT="/var/www/html"
+TMP_DIR="/tmp/web_template"
+LOG_FILE="/var/log/httpd_template_install.log"
+
+############################
+# Helper Functions
+############################
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') | $1" | tee -a "$LOG_FILE"
+}
+
+error_exit() {
+  log "ERROR: $1"
+  exit 1
+}
+
+cleanup() {
+  rm -rf "$TMP_DIR"
+}
+trap cleanup EXIT
+
+############################
+# Pre-flight Checks
+############################
+[[ $EUID -eq 0 ]] || error_exit "This script must be run as root."
+
+command -v yum >/dev/null || error_exit "yum package manager not found."
+command -v curl >/dev/null || error_exit "curl is required but not installed."
+
+############################
+# Main Execution
+############################
+log "Starting HTTPD + template installation"
+
+log "Updating system packages..."
+yum -y update >> "$LOG_FILE" 2>&1 || error_exit "System update failed."
+
+log "Installing httpd and unzip..."
+yum -y install httpd unzip >> "$LOG_FILE" 2>&1 || error_exit "Package installation failed."
+
+log "Enabling and starting httpd..."
+systemctl enable httpd >> "$LOG_FILE" 2>&1
+systemctl start httpd || error_exit "Failed to start httpd."
+
+log "Preparing temporary workspace..."
+mkdir -p "$TMP_DIR"
+
+log "Downloading HTML template..."
+curl -fL "$TEMPLATE_URL" -o "$TMP_DIR/template.zip" \
+  >> "$LOG_FILE" 2>&1 || error_exit "Template download failed."
+
+log "Validating ZIP archive..."
+unzip -tq "$TMP_DIR/template.zip" >> "$LOG_FILE" 2>&1 \
+  || error_exit "Invalid ZIP archive."
+
+log "Extracting template..."
+unzip -oq "$TMP_DIR/template.zip" -d "$TMP_DIR" \
+  >> "$LOG_FILE" 2>&1 || error_exit "Template extraction failed."
+
+log "Deploying template to web root..."
+[[ -d "$WEB_ROOT" ]] || error_exit "Web root does not exist."
+
+rm -rf "${WEB_ROOT:?}"/*
+cp -r "$TMP_DIR"/* "$WEB_ROOT"/ || error_exit "Failed to copy template files."
+
+log "Setting ownership and permissions..."
+chown -R apache:apache "$WEB_ROOT"
+chmod -R 755 "$WEB_ROOT"
+
+log "Restarting httpd..."
+systemctl restart httpd || error_exit "httpd restart failed."
+
+log "✅ Installation and deployment completed successfully!"
+
+
+
+
+
+
