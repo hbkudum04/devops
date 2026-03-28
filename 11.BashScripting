@@ -206,6 +206,137 @@ log "✅ Installation and deployment completed successfully!"
 
 
 
+echo $? ==> exit code of last command '0' for success non-zero for any failure
+
+double quotes "" ==>string , special chars has val $ means variable
+single '' ==> string removes value of special chars $ just a char
+in a "" u wanna cancel meaning of special char use \
+
+
+command substitution 
+backticks (not single quote) `` ==> saves output of the command and saves to variable
+$() ==> does same saves output of the command and saves to variable
+
+Exporting  variables ==> exporting variable makes variable global for all child shells with in the process
+.bashrc / .profile ==> when user login this file will be sourced like source .bashrc
+any export variables placed in this is always available 
+/etc/profile ==> global for all users 
+
+Integractive input will be done with command 'read'
+eg: read -p 'Username:' USR ==> -p is for prompt, -sp supress prompt i.e cant see was user typing
+
+not recommanded to use this in devops to have user interaction
+
+Decition making ==> 
+if [ $num -gt "100" ] ==> -gt(greater than), -lt(lessthan), -eq(equal to)
+then 
+<commands> 
+elif [ $num -eq "100"  ]
+<commands>
+else
+<command>
+fi
+
+
+cron jobs are scheduled tasks
+
+crontab -e
+
+#MM HH DOM mm DOW command EG: ==>30 20 * * 1-5 monday to friday every month, every day, at 8:30 pm
+30 20 * * 1-5   /opt/scripts/11_monit.sh &>> /var/log/monit_httpd.log  
+:wq
+
+-------------------------------------------
+Loops:
+-------------------------------------------
+
+#! /bin/bash
+
+MYUSERS="alpha beta gamma"
+
+for usr in $MYUSERS
+do
+	echo "Adding user $usr.'
+	useradd $user
+done
+
+
+
+#! /bin/bash
+
+MYUSERS="alpha beta gamma"
+
+while usr in $MYUSERS
+do
+	echo "Adding user $usr.'
+	useradd $user
+done
+
+-------------------------------------------
+Remote command execution:
+-------------------------------------------
+
+create users on on all vms
+ssh vagrant@web01
+useradd devops
+passwd devops
+
+
+NOTE: ubuntu is not pwd login , its key login. Go to /etc/ss/sshd_config and update PasswordAuthentication no chnage to yes. Save and quit.
+systemctl restart ssh
+add these users to visudo file
+
+to execute remotly ssh devops@web01 <cmd>
+ssh devops@web01 uptime
+PWD: <provide pwd> and command gets executed
+
+TO avoid pwd authentication every single time for each command run
+ss-keygen  ==> Generates public /private rsa key pair and will be saved at /root/.ssh/id_rsa (private works as lock) , /root/.ssh/id_rsa.pub (public key works as key to open taht lock)
+
+to apply lock on server 
+ssh-copy-id devops@web01 ==> source key lockes takes from /root/.ssh/id_rsa.pub  and applied on web01. After this if run below command no pwd asked, key will be applied by default
+ssh devops@web01 uptime ==> what its doing is 'ssh -i .ssh/id_rsa devops@web01 uptime'
+
+
+--------------------------------------------------
+automating is base framework for web setup:
+--------------------------------------------------
+mkdir remote_websetup
+cd remote_websetup
+vim remotehosts
+web01
+web02
+web03
+:wq
+for host in `cat remotehosts`; do ssh devops@$host uptime; done
+for host in `cat remotehosts`; do ssh devops@$host sudo yum install git -y; done
+
+--------------------------------------------------
+pushing the script to all remote m/c
+--------------------------------------------------
+vim webdeploy.sh
+#! /bin/bash/
+
+for host in `cat remhosts`
+do
+	echo "#################################################'
+	echo "Connecting to $host"
+	echo "Pushing Scipt to $host"
+	scp multios_websetup.sh $USR@$host:/tmp/
+	echo "Executing Script on $host"
+	ssh $USR@$host sudo /tmp/multios_websetup.sh
+	ssh $USR@$host sudo rm - rf /tmp/multios_websetup.sh
+	echo "#################################################'
+	echo
+done
+:wq
+chmod +x ./webdeploy.sh
+
+
+
+
+
+
 
 
 
