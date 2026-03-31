@@ -1,0 +1,42 @@
+sonar abt code quality less abt security quality. Xray, checkmarks for security scans it happens for every commit
+
+Unit + soanr +Xray ==> CI process (continuous integration / continuos feedback) 
+branching strategy ==> simple branching strategy feature branch + commit + gets feedback + gets reviwed and merged and then CI will happen on main branch
+we will create a docker image and save in ECR, AWS ECR, or artifactory  or Nexus (centralized artifactory) 
+
+till here entire CI process completes for CR and image ready for actual environments. 
+
+STAGE ==> PROD ==> Support
+infrastructure => old VMs or on-prem cloud(the hybrid i.e. multi-cloud) 
+cloud flovours => kubernetess(EKS this new way of deployment), or ECS (ECS is old way)
+GCP - google cloud platform 
+Kubernetess deployments are same acroos diff clouds
+in Kubernetees we use helm chart industry stadard way of deployiong an application as a full package. Previously we used have 
+
+K8 Deployment (this cretaes new pod for each new deployment) => k8 ingress => K8 service
+
+stage deployment done => stage regression ==> security / audit & complaince  => prod
+Artifactory in-build security scans i.e. xray shows all vunarabilities 
+
+Base Image ==> middle ware libs ==> commonlibs ==> application code vulnarability can be any one of these 4 layers
+
+New process
+
+First buidling base img scanning with xray, Application img  scanning (midd ware component we are not maintaining seperately)
+
+baseware ==> scan issues notified to cloud ops
+
+middleware ==> sre
+application scan issue ==> developers
+
+prisma - after deploying actual application after deploying on container to scan run time vulnarabilities
+
+to maintain base of image seperate repository 
+
+
+
+
+
+
+
+
