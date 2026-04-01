@@ -1,0 +1,115 @@
+-----------------------------------------
+Cloud
+-----------------------------------------
+access your virtual resource over network is called cloud computing.
+org ==> private cloud computing
+public ==> public cloud computing, AWS, Azure
+
+more than 90% of organizatiosn using cloud computing
+
+agility, elasticity, costy saving (Pay as you use), can go global in mins
+
+Type od cloud computing ==> Iaas (infrastructure as a Service), Paas (platform aas a service), Saas (s/w as a service)
+AWS Free Tier account ==> set up an account, setup IAM user
+
+The AWS Cloud spans 123 Availability Zones within 39 Geographic Regions
+
+https://aws.amazon.com/about-aws/global-infrastructure/regions_az/
+
+EC2 Servcie (Elastic Compute Cloud):
+> provides webservices for provisioning, managing, deprovisioning virtual servers on amazon cloud
+> ease in scaling up/down
+> pay only for what you use
+> can be integrated into several other services
+
+pricing ==> on Demand(pay per hr), Reserved (1 to 3 yrs), SPot (unused ec2 resources u can bid with huge discount), dedicated hosts (physical server dedicated for you very expensive)
+Component in EC2:
+AMI (amazon m/c images like vargrant boxes) provided info req'd to launch an isntancei.e. virtual server in the cloud
+Instace type the instance type u specify when you lauch determines the h/w of the host computer used for your instance 
+EBS (amazon Elastic Block Store amazon provides flexible, cost effective and easy-to-use data storage options for yopur instances) its virtual hard disk
+tags good for filtering and billing
+security group - firewall for inbound and outbound traffic
+Key pair - to login to instance , we use this to create pwd
+
+-----------------------------------------
+Create EC2 instance
+-----------------------------------------
+
+Each region has atleast 2 zone... zone are teh actual Physical centers
+
+Choose AMI , select isnatnce type, configure the instance (n/w, permission, scripts to execute), adding storage, tags (key value pars..etc) , configure security group, and review 
+
+gather requirement (OS; size- RAM, cpu,n/w; Storage size; project; services/apps running - SSH, http, mysql etc;environment - dev,QA,staging,pre-prod, Prod; Login User - for trackign and tagging)
+create keypair 
+create security group
+launch instance
+
+ssh -i <keyfile .pem> user@<public ip>
+
+private IP is static for instance , public IP is everytime dynamacally given each time the instace is repowered 
+elastic IP (public static IP) unique ip address alloted to ur instance they are not for free
+private , public Ip and security group are associated to n/w interface
+each instance can have one or more n/w interface
+
+-----------------------------------------
+Amazon CLI
+-----------------------------------------
+
+brew install awscli
+
+
+aws configure
+AWS Access Key ID:
+AWS Secret Access Key:
+Default region name: us-east-1
+Default output format: json
+
+aws sts get-caller-identity
+aws ec2 describe-instances
+https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-code-examples.html
+AWS AI i.e. Amazon Q
+
+-----------------------------------------
+SSM  & Cloud Shell Intro
+-----------------------------------------
+AWS Sytems Manager - u cna manage many notes at scale
+U can run your command on one note or multiple notes at a time
+goto IAM service > Roles > create role
+AWS Service, Usecase : EC2, Select Policy select 'AmazonSSmManagedInstanceCore' , give role name and create role
+attach this role to instance.ACTIONS> SECURITY>MODIFY IAM ROLE and select ur role and update
+Amazon SSM > session manager and click on start session
+Select Your instance and next 'Start your session' in new tab you will get a session where u can perform all actions on the instance without ssh or login
+
+To run command on one or multi notes
+
+'Run Command' > choose options and run
+
+AWS clopud shell (with user account permissions we cna do with out aws cli)
+
+-----------------------------------------------------
+AWS EBS (Elastic Block STorage - Virtual storage )
+-----------------------------------------------------
+its block based storgae like hard disk .
+Its used to run ec2 OS, store DB, weservers, file data etc
+While creating EBS volume specify your availability zone, specify same zone same as you have EBS volume
+Diff type of EBS TYpes
+- General purpose - general most work load (web service) thsi si SSD - solid state drive 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
