@@ -1,0 +1,58 @@
+idea > code > build > deploy > operate
+
+key highlights
+1. unified multiplatform support
+2. Intrutive & developer Friendly Exp
+3. True Self Service Capability
+4. Central Hub (single Pane of Glass)
+5. Modular & Extensible Arch
+6. Enhance dev productivity
+
+
+sso authorize
+
+Swagger hub - 
+release Management > CHange regeq status scheduled releases/ deployed/ missed/released history (service now)
+Microservices - All from 
+      git hib  - each can be drilled down to what currently in prod, stage releasse info, congmgmt(kafka,DB, schemaname),
+                harnessci/cd(complete replica for this micro service from harness, saves harness licencing cost),
+                
+      service now - CRs, pipeline incidents,
+        for new service choose domain functionality and Required for budget tracking (format: APM followed by numbers)
+
+         Required for budget tracking (format: APM followed by numbers)
+          and TDD approval page from confluence with approval validation
+          skip validation with reasoning for POC (DARE team will do)
+          DB require, redis Cache required, Kafka required ..etc. 
+          with all end to end pipeline with service repository creation takes place
+        
+          Infra provision for existing 
+          env, APM number, service now ticket (budget approval ticket), if prod env prod checklist, diff infra components - EKS(kubernetees), DB, Messaging (SQS/SNS), ElasiticCache(Redis), S3 Storage, Lambda Fucntions
+          after submisting provisioning truiggers
+          we can check task list triggered based on provision request
+    
+          DevEx AI Assitant  - for analysis and with few write actions like re-run build
+          same VSC an extention created (no write actions)
+
+      sonarqube - CRs, pipeline incidents, 
+      security - vulnarabilities security scans from xray, artifactory storage(incluster caching to avoid artifactory storage cost)
+      kunernestees - logs, status of pods (nirmata), blue active or green active, cpu and memory utilization, m/s version sidecar version
+      openAPI - dev team to play around swagger hub related content 
+      github prs - all open and closed prs
+      code insights - language, readme files, contributors
+      scorecard - based onc heck list security sign off, date team sign off.. etc
+Tech docs - documentations from confluence ( will comes form devlopers)
+Learnign hug - application configurtaions , secrets, sprintboot seceret
+self serve - embeeded iframe videos from sharepoint how to onboard 
+Notifications - new capabilities of platform devEx
+
+Release Insights - DORA matrix (dashbaord) - Release Overview, Deployment Quality, Performance Metrics, Pipelien health, Team Metrics
+Deployment Quality- failure rate, successrate, change Failure rate, MTTR, Failure by type (build failure, test failure, deployment failure, timeout)
+improvements - service now, incident integration, 
+
+support model -  service now and JIRA tickets for pipeline creation tarcking 
+
+
+
+
+
